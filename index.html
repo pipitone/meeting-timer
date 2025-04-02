@@ -1,0 +1,169 @@
+i<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meeting Countdown Timer</title>
+    <style>
+        /* Style the body with a black background */
+        body {
+            background-color: #000;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        /* Style the timer display */
+        #timer-display {
+            font-size: 64px;
+            font-weight: bold;
+            color: #fff;
+            margin: 20px 0;
+        }
+
+        /* Style the settings */
+        #settings {
+            color: #fff;
+            margin: 20px 0;
+        }
+
+        /* Style the input fields */
+        input[type="number"] {
+            width: 50px;
+            height: 20px;
+            font-size: 16px;
+        }
+
+        /* Style the start/stop button */
+        #start-stop-button {
+            width: 100px;
+            height: 30px;
+            font-size: 16px;
+        }
+
+        /* Style the sound toggle checkbox */
+        #sound-toggle {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <div id="timer-display">05:00</div>
+    <div id="settings">
+        <label for="interval">Interval (minutes):</label>
+        <input type="number" id="interval" value="5">
+        <br>
+        <label for="reminder-interval">Reminder interval (minutes):</label>
+        <input type="number" id="reminder-interval" value="1">
+        <br>
+        <button id="start-stop-button">Start</button>
+        <label for="sound-toggle">Sound:</label>
+        <input type="checkbox" id="sound-toggle" checked>
+    </div>
+
+    <script>
+        // Get the timer display and settings elements
+        const timerDisplay = document.getElementById('timer-display');
+        const intervalInput = document.getElementById('interval');
+        const reminderIntervalInput = document.getElementById('reminder-interval');
+        const startStopButton = document.getElementById('start-stop-button');
+        const soundToggle = document.getElementById('sound-toggle');
+
+        // Initialize the timer variables
+        let interval = parseInt(intervalInput.value);
+        let reminderInterval = parseInt(reminderIntervalInput.value);
+        let currentTime = interval * 60;
+        let running = false;
+        let soundOn = soundToggle.checked;
+
+        // Function to play a bell sound
+        function playBellSound() {
+            const bellSound = new AudioContext();
+            const oscillator = bellSound.createOscillator();
+            oscillator.type = 'sine';
+            oscillator.frequency.value = 1000;
+            const gain = bellSound.createGain();
+            gain.gain.value = 0.5;
+            oscillator.connect(gain);
+            gain.connect(bellSound.destination);
+            oscillator.start();
+            setTimeout(() => {
+                oscillator.stop();
+            }, 1000);
+        }
+
+        // Function to play a reminder sound
+        function playReminderSound() {
+            const reminderSound = new AudioContext();
+            const oscillator = reminderSound.createOscillator();
+            oscillator.type = 'sine';
+            oscillator.frequency.value = 500;
+            const gain = reminderSound.createGain();
+            gain.gain.value = 0.2;
+            oscillator.connect(gain);
+            gain.connect(reminderSound.destination);
+            oscillator.start();
+            setTimeout(() => {
+                oscillator.stop();
+            }, 500);
+        }
+
+        // Function to update the timer display
+        function updateTimerDisplay() {
+            const minutes = Math.floor(currentTime / 60);
+            const seconds = currentTime % 60;
+            timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        // Function to start the timer
+        function startTimer() {
+            running = true;
+            startStopButton.textContent = 'Stop';
+            const intervalId = setInterval(() => {
+                if (running) {
+                    currentTime--;
+                    updateTimerDisplay();
+                    if (currentTime === 0) {
+                        playBellSound();
+                        currentTime = interval * 60;
+                    } else if (currentTime % (reminderInterval * 60) === 0) {
+                        playReminderSound();
+                    }
+                } else {
+                    clearInterval(intervalId);
+                }
+            }, 1000);
+        }
+
+        // Function to stop the timer
+        function stopTimer() {
+            running = false;
+            startStopButton.textContent = 'Start';
+        }
+
+        // Event listeners for start/stop button and sound toggle
+        startStopButton.addEventListener('click', () => {
+            if (running) {
+                stopTimer();
+            } else {
+                startTimer();
+            }
+        });
+
+        soundToggle.addEventListener('change', () => {
+            soundOn = soundToggle.checked;
+        });
+
+        // Event listeners for interval and reminder interval input fields
+        intervalInput.addEventListener('change', () => {
+            interval = parseInt(intervalInput.value);
+            currentTime = interval * 60;
+            updateTimerDisplay();
+        });
+
+        reminderIntervalInput.addEventListener('change', () => {
+            reminderInterval = parseInt(reminderIntervalInput.value);
+        });
+    </script>
+</body>
+</html>
+
