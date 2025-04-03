@@ -14,16 +14,25 @@ i<!DOCTYPE html>
 
         /* Style the timer display */
         #timer-display {
-            font-size: 64px;
+            font-size: 256px;
             font-weight: bold;
             color: #fff;
-            margin: 20px 0;
+            margin: 0;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
         }
+
 
         /* Style the settings */
         #settings {
             color: #fff;
-            margin: 20px 0;
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
         }
 
         /* Style the input fields */
@@ -75,36 +84,19 @@ i<!DOCTYPE html>
         let running = false;
         let soundOn = soundToggle.checked;
 
+        // Create Audio objects for bell and reminder sounds
+        const bellSound = new Audio('doorbell.mp3');
+        const reminderSound = new Audio('reminder.mp3');
+
+
         // Function to play a bell sound
         function playBellSound() {
-            const bellSound = new AudioContext();
-            const oscillator = bellSound.createOscillator();
-            oscillator.type = 'sine';
-            oscillator.frequency.value = 1000;
-            const gain = bellSound.createGain();
-            gain.gain.value = 0.5;
-            oscillator.connect(gain);
-            gain.connect(bellSound.destination);
-            oscillator.start();
-            setTimeout(() => {
-                oscillator.stop();
-            }, 1000);
+            if (soundOn) bellSound.play(); 
         }
 
         // Function to play a reminder sound
         function playReminderSound() {
-            const reminderSound = new AudioContext();
-            const oscillator = reminderSound.createOscillator();
-            oscillator.type = 'sine';
-            oscillator.frequency.value = 500;
-            const gain = reminderSound.createGain();
-            gain.gain.value = 0.2;
-            oscillator.connect(gain);
-            gain.connect(reminderSound.destination);
-            oscillator.start();
-            setTimeout(() => {
-                oscillator.stop();
-            }, 500);
+            if (soundOn) reminderSound.play();
         }
 
         // Function to update the timer display
