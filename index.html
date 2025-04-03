@@ -7,6 +7,7 @@ i<!DOCTYPE html>
     <style>
         /* Style the body with a black background */
         body {
+            font-family: 'Digital-7', 'VT323', Arial, sans-serif;
             background-color: #000;
             font-family: Arial, sans-serif;
             text-align: center;
@@ -49,6 +50,14 @@ i<!DOCTYPE html>
             font-size: 16px;
         }
 
+        /* Style the restart button */
+        #restart-button {
+            width: 100px;
+            height: 30px;
+            font-size: 16px;
+        }
+
+
         /* Style the sound toggle checkbox */
         #sound-toggle {
             vertical-align: middle;
@@ -59,12 +68,13 @@ i<!DOCTYPE html>
     <div id="timer-display">05:00</div>
     <div id="settings">
         <label for="interval">Interval (minutes):</label>
-        <input type="number" id="interval" value="5">
+        <input type="number" id="interval" value="5" step="0.5">
         <br>
         <label for="reminder-interval">Reminder interval (minutes):</label>
-        <input type="number" id="reminder-interval" value="1">
+        <input type="number" id="reminder-interval" value="1" step="0.5">
         <br>
         <button id="start-stop-button">Start</button>
+        <button id="restart-button">Restart</button>
         <label for="sound-toggle">Sound:</label>
         <input type="checkbox" id="sound-toggle" checked>
     </div>
@@ -75,11 +85,12 @@ i<!DOCTYPE html>
         const intervalInput = document.getElementById('interval');
         const reminderIntervalInput = document.getElementById('reminder-interval');
         const startStopButton = document.getElementById('start-stop-button');
+        const restartButton = document.getElementById('restart-button');
         const soundToggle = document.getElementById('sound-toggle');
 
         // Initialize the timer variables
-        let interval = parseInt(intervalInput.value);
-        let reminderInterval = parseInt(reminderIntervalInput.value);
+        let interval = parseFloat(intervalInput.value);
+        let reminderInterval = parseFloat(reminderIntervalInput.value);
         let currentTime = interval * 60;
         let running = false;
         let soundOn = soundToggle.checked;
@@ -102,7 +113,7 @@ i<!DOCTYPE html>
         // Function to update the timer display
         function updateTimerDisplay() {
             const minutes = Math.floor(currentTime / 60);
-            const seconds = currentTime % 60;
+            const seconds = Math.floor(currentTime % 60);
             timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
         }
 
@@ -117,14 +128,27 @@ i<!DOCTYPE html>
                     if (currentTime === 0) {
                         playBellSound();
                         currentTime = interval * 60;
-                    } else if (currentTime % (reminderInterval * 60) === 0) {
+                    } else if (Math.floor(currentTime) % Math.floor(reminderInterval * 60) === 0) {
                         playReminderSound();
                     }
                 } else {
                     clearInterval(intervalId);
                 }
             }, 1000);
+
         }
+
+        // Function to restart the timer
+        function restartTimer() {
+            stopTimer();
+            currentTime = interval * 60;
+            updateTimerDisplay();
+        }
+
+        // Event listener for the restart button
+        restartButton.addEventListener('click', () => {
+            restartTimer();
+        });
 
         // Function to stop the timer
         function stopTimer() {
@@ -147,13 +171,13 @@ i<!DOCTYPE html>
 
         // Event listeners for interval and reminder interval input fields
         intervalInput.addEventListener('change', () => {
-            interval = parseInt(intervalInput.value);
+            interval = parseFloat(intervalInput.value);
             currentTime = interval * 60;
             updateTimerDisplay();
         });
 
         reminderIntervalInput.addEventListener('change', () => {
-            reminderInterval = parseInt(reminderIntervalInput.value);
+            reminderInterval = parseFloat(reminderIntervalInput.value);
         });
     </script>
 </body>
