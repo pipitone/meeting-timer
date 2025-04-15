@@ -64,7 +64,7 @@ i<!DOCTYPE html>
     </style>
 </head>
 <body>
-    <div id="timer-display">05:00</div>
+    <div id="timer-display">00:00</div>
     <div id="settings">
         <div class="control-group">
             <label class="form-label" for="interval">Interval (min)</label>
@@ -93,9 +93,10 @@ i<!DOCTYPE html>
 
         // Initialize the timer variables
         let interval = parseFloat(intervalInput.value);
-        let reminderInterval = parseFloat(reminderIntervalInput.value);
-        let currentTime = interval * 60;
+        let reminderInterval = parseFloat(reminderIntervalInput.value); // Note: This is currently unused based on the request for reminders *every minute* after interval.
+        let currentTime = 0;
         let running = false;
+        let intervalReached = false; // Track if the main interval has been reached
         let soundOn = soundToggle.checked;
 
         // Create Audio objects for bell and reminder sounds
@@ -124,30 +125,36 @@ i<!DOCTYPE html>
         function startTimer() {
             running = true;
             startStopButton.textContent = 'Stop';
-            const intervalId = setInterval(() => {
+            // Store intervalId to clear it later
+            window.timerIntervalId = setInterval(() => {
                 if (running) {
-                    currentTime--;
+                    currentTime++;
                     updateTimerDisplay();
-                    if (currentTime === 0) {
+
+                    // Check if the main interval is reached
+                    if (!intervalReached && currentTime === Math.floor(interval * 60)) {
                         playBellSound();
-                        currentTime = interval * 60;
-                    } else if (Math.floor(currentTime) % Math.floor(reminderInterval * 60) === 0) {
-                        playReminderSound();
+                        intervalReached = true;
+                    }
+                    // Check for reminders every minute *after* the main interval
+                    else if (intervalReached && currentTime > Math.floor(interval * 60) && currentTime % 60 === 0) {
+                         playReminderSound();
                     }
                 } else {
-                    clearInterval(intervalId);
+                    clearInterval(window.timerIntervalId);
                 }
             }, 1000);
-
         }
 
         // Function to restart the timer
         function restartTimer() {
-            stopTimer();
-            currentTime = interval * 60;
+            stopTimer(); // Stops the timer and clears the interval
+            currentTime = 0;
+            intervalReached = false; // Reset the interval reached flag
             updateTimerDisplay();
-            startTimer();
-            startStopButton.textContent = 'Stop';
+            // Don't automatically start, let the user press Start
+            // startTimer(); // Removed auto-start on restart
+            // startStopButton.textContent = 'Stop'; // Button text handled by stopTimer
         }
 
         // Event listener for the restart button
@@ -159,6 +166,11 @@ i<!DOCTYPE html>
         function stopTimer() {
             running = false;
             startStopButton.textContent = 'Start';
+            // Ensure the interval is cleared when stopping
+            if (window.timerIntervalId) {
+                clearInterval(window.timerIntervalId);
+                window.timerIntervalId = null; // Clear the stored ID
+            }
         }
 
         // Event listeners for start/stop button and sound toggle
@@ -176,9 +188,18 @@ i<!DOCTYPE html>
 
         // Event listeners for interval and reminder interval input fields
         intervalInput.addEventListener('change', () => {
-            interval = parseFloat(intervalInput.value);
-            currentTime = interval * 60;
-            updateTimerDisplay();
+            const newInterval = parseFloat(intervalInput.value);
+            if (!isNaN(newInterval) && newInterval > 0) {
+                 interval = newInterval;
+                 // Only reset timer display if not running, otherwise interval change takes effect on next relevant check
+                 if (!running) {
+                    // Optionally reset currentTime to 0 and update display if stopped?
+                    // For now, just update the interval variable.
+                 }
+            } else {
+                // Optionally revert to old value or show an error
+                intervalInput.value = interval;
+            }
         });
 
         reminderIntervalInput.addEventListener('change', () => {
