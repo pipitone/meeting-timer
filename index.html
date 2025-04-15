@@ -68,11 +68,11 @@ i<!DOCTYPE html>
     <div id="settings">
         <div class="control-group">
             <label class="form-label" for="interval">Interval (min)</label>
-            <input type="number" class="form-control" id="interval" value="5" step="0.5">
+            <input type="number" class="form-control" id="interval" value="5" min="0.5" step="0.5">
         </div>
         <div class="control-group">
             <label class="form-label" for="reminder-interval">Reminder (min)</label>
-            <input type="number" class="form-control" id="reminder-interval" value="1" step="0.5">
+            <input type="number" class="form-control" id="reminder-interval" value="1" min="0.5" step="0.5">
         </div>
         <button class="btn btn-primary" id="start-stop-button">Start</button>
         <button class="btn btn-secondary" id="restart-button">Restart</button>
@@ -93,7 +93,7 @@ i<!DOCTYPE html>
 
         // Initialize the timer variables
         let interval = parseFloat(intervalInput.value);
-        let reminderInterval = parseFloat(reminderIntervalInput.value); // Note: This is currently unused based on the request for reminders *every minute* after interval.
+        let reminderInterval = parseFloat(reminderIntervalInput.value); 
         let currentTime = 0;
         let running = false;
         let intervalReached = false; // Track if the main interval has been reached
@@ -136,8 +136,8 @@ i<!DOCTYPE html>
                         playBellSound();
                         intervalReached = true;
                     }
-                    // Check for reminders every minute *after* the main interval
-                    else if (intervalReached && currentTime > Math.floor(interval * 60) && currentTime % 60 === 0) {
+                    // Check for reminders every reminder interval after the main interval has been reached
+                    else if (intervalReached && (currentTime - Math.floor(interval * 60)) % Math.floor(reminderInterval * 60) === 0) {
                          playReminderSound();
                     }
                 } else {
